@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -6,6 +6,7 @@ using System.Text;
 using RESTApi.Models;
 using RESTApi.Seeders;
 using RESTApi.Services;
+using RESTApi.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,5 +70,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapDoctorEndpoints();
 
 app.Run();
