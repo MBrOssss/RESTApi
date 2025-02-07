@@ -141,10 +141,13 @@ namespace RESTApi.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new TokenModel
+                return Ok(new ResponseDTO<TokenModel>()
                 {
-                    AccessToken = token,
-                    RefreshToken = refreshToken
+                    Data = new TokenModel
+                    {
+                        AccessToken = token,
+                        RefreshToken = refreshToken
+                    }
                 });
             }
             catch (Exception ex)

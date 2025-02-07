@@ -4,15 +4,23 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using RESTApi.Models;
-using RESTApi.Seeders;
 using RESTApi.Services;
-using RESTApi.Controllers;
+using RESTApi.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 // Add services to the container.
-
 builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+#region ServicesInject
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IDoctorService, DoctorService>();
+#endregion
+
+#region RepositoriesInject
+builder.Services.AddTransient(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+#endregion
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
@@ -48,7 +56,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -70,7 +78,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapDoctorEndpoints();
 
 app.Run();
