@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using RESTApi.Models.DTOs;
 using System.Linq.Expressions;
 
-namespace RESTApi.Repository
+namespace RESTApi.Repository.Interfaces
 {
     public interface IGenericRepository<T, in TKey> where T : class
     {

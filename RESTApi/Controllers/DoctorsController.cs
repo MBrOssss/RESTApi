@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using RESTApi.Constants;
-using RESTApi.Models.DTOs;
-using RESTApi.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RESTApi.Data;
+using RESTApi.Data.Models;
 
 namespace RESTApi.Controllers
 {
@@ -10,47 +9,95 @@ namespace RESTApi.Controllers
     [ApiController]
     public class DoctorsController : ControllerBase
     {
-        private readonly IDoctorService _service;
+        private readonly ApplicationDbContext _context;
 
-        public DoctorsController(IDoctorService service)
+        public DoctorsController(ApplicationDbContext context)
         {
-            _service = service;
+            _context = context;
         }
 
+        // GET: api/Doctors
         [HttpGet]
-        public async Task<ListResponseDTO<IList<DoctorDTO>>> GetList([FromQuery] ListRequestDTO model)
+        public async Task<ActionResult<IEnumerable<Doctor>>> GetDoctors()
         {
-            return await _service.GetList<DoctorDTO>(model);
+            return await _context.Doctors.ToListAsync();
         }
 
-        [Route("{id:int}")]
-        [HttpGet]
-        public async Task<ResponseDTO<DoctorDTO>> Get(int id)
+        // GET: api/Doctors/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Doctor>> GetDoctor(int id)
         {
-            return await _service.GetById<DoctorDTO>(id);
+            var doctor = await _context.Doctors.FindAsync(id);
+
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+            return doctor;
         }
 
+        // PUT: api/Doctors/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutDoctor(int id, Doctor doctor)
+        {
+            if (id != doctor.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(doctor).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!DoctorExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // POST: api/Doctors
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<ResponseDTO<DoctorAddEditDTO>> Add(DoctorAddEditDTO model)
+        public async Task<ActionResult<Doctor>> PostDoctor(Doctor doctor)
         {
-            return await _service.Add(model);
+            _context.Doctors.Add(doctor);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetDoctor", new { id = doctor.Id }, doctor);
         }
 
-        [Route("{id:int}")]
-        [HttpPut]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<ResponseDTO<DoctorAddEditDTO>> Edit(int id, DoctorAddEditDTO model)
+        // DELETE: api/Doctors/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteDoctor(int id)
         {
-            return await _service.Edit(model, id);
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+            _context.Doctors.Remove(doctor);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
-        [Route("{id:int}")]
-        [HttpDelete]
-        [Authorize(Roles = Roles.Admin)]
-        public async Task<ResponseDTO<DoctorDTO>> Delete(int id)
+        private bool DoctorExists(int id)
         {
-            return await _service.Delete<DoctorDTO>(id);
+            return _context.Doctors.Any(e => e.Id == id);
         }
     }
 }

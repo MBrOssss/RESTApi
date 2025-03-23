@@ -5,8 +5,10 @@ using RESTApi.Models;
 using RESTApi.Extensions;
 using RESTApi.Models.DTOs;
 using RESTApi.Constants;
+using RESTApi.Repository.Interfaces;
+using Microsoft.AspNetCore.Http;
 
-namespace RESTApi.Repository
+namespace RESTApi.Repository.Implementations
 {
     public class GenericRepository<T, TKey> : IGenericRepository<T, TKey> where T : class
     {

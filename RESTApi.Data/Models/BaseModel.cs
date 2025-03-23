@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace RESTApi.Models
+namespace RESTApi.Data.Models
 {
     public class BaseModel
     {
@@ -9,11 +9,5 @@ namespace RESTApi.Models
 
         [Comment("Data ostatniej aktualizacji wpisu")]
         public DateTime? UpdatedDate { get; set; }
-
-        [Comment("Identyfikator użytkownika tworzącego wpis")]
-        public string? CreatedUserId { get; set; }
-
-        [Comment("Identyfikator użytkownika aktualizującego wpis")]
-        public string? UpdatedUserId { get; set; }
     }
 }
