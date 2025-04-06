@@ -88,12 +88,15 @@ namespace RESTApi.Controllers
 
             _context.Entry(doctor).State = EntityState.Modified;
 
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
+                await transaction.RollbackAsync();
                 if (!DoctorExists(id))
                 {
                     return NotFound();
@@ -105,6 +108,7 @@ namespace RESTApi.Controllers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, $"An error occurred while updating doctor with id {id}.");
                 return StatusCode(500, "Internal server error");
             }
@@ -125,15 +129,18 @@ namespace RESTApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 _context.Doctors.Add(doctor);
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return CreatedAtAction("GetDoctor", new { id = doctor.Id }, doctor);
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, "An error occurred while creating a new doctor.");
                 return StatusCode(500, "Internal server error");
             }
@@ -147,6 +154,7 @@ namespace RESTApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDoctor(int id)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var doctor = await _context.Doctors.FindAsync(id);
@@ -157,11 +165,13 @@ namespace RESTApi.Controllers
 
                 _context.Doctors.Remove(doctor);
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return NoContent();
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, $"An error occurred while deleting doctor with id {id}.");
                 return StatusCode(500, "Internal server error");
             }
